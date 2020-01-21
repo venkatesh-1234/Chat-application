@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+   <head>
+   </head>
+   <body>
+   <script src = "/socket.io/socket.io.js"></script>
+   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+   <script>
+      var socket = io();
+      function setUsername() {
+         socket.emit('setUsername', document.getElementById('name').value);  
+      };
+      var user;
+      socket.on('empty',function(){
+         document.getElementById('error-container').innerHTML=alert('username cannot be blank')
+      });
+      socket.on('userExists', function(data) {
+         document.getElementById('error-container').innerHTML = alert(data);
+      });
+      socket.on('userSet', function(data) {
+         user = data.username;
+         socket.emit("conmsg",user);
+         socket.on('welcomemsg',function(condata){
+            document.getElementById('container').innerHTML += '<center><h1>'+ 'welcome to chat ' + 
+           condata +' !' +'</h1></center>'
+         })
+         socket.on('conmsg',function(condata){
+        document.getElementById('sample').innerHTML += '<div><b><center>'+'🔵 <i>' + 
+           condata  + '</b>  ' + 'is connected'+'</div>'
+        });
+        });
+      function sendMessage() {
+         var msg = document.getElementById('message').value;
+         var sendto=document.getElementById('sendto').value;
+         if(msg&&sendto) {
+            socket.emit('msg', {user: user , message: msg, send:sendto});
+         }
+         clear();
+      }
+      socket.on('newmsg', function(data) {
+         if(user) {
+            document.getElementById('message-container').innerHTML += '<div><b>' + '🔵 <i>'+
+               data.user + '</b>: ' + data.message + '</div>'
+         }
+      })
+      socket.on('array',function(socketstore){
+         document.getElementById('array').innerHTML='';
+         socketstore.forEach(emnt => {
+            document.getElementById('array').innerHTML += '<div><b>'+ '🔵 <i>'+
+            emnt + '</b></div>' 
+         });
+      });
+         socket.on('disconnect',function(condata){
+        document.getElementById('sample').innerHTML += '<div><b><center>'+ '🔵 <i>'+
+            condata + '</b>  ' + 'left the chat'+'</div>'
+        });
+        function clear(){
+         document.getElementById('sendto').value = '';
+         document.getElementById('message').value = '';
+        }
+        function hide(){
+           $('#main').hide() 
+           $('#second').show();
+           setUsername();
+        };
+   </script>
+   <div id="main" >
+        <center>
+         <h1>venkatesh chatbox</h1>
+         <input id = "name" type = "text" name = "name" value = "" placeholder="Enter user name">
+         <button type = "button" class='submit_btn' name = "button" onclick="hide()">
+            submit
+         </center>
+         </button>
+      </div>
+      <div id="second"style="display:none" >
+         <center><div  style="color:blue"  id = "container"></div>Enter your message:<input type = "text" id = "message">
+            To user:<input type = "text" id = "sendto">
+            <button type = "button" class="submit_btn" name = "button" onclick = "sendMessage()">Send</button>
+           
+         </center>
+         <div class="sam" style="color:rgb(128, 0, 53)" id = "sample"><b>Connections/disconnections:</b> </div> 
+            <div class="con"  style="color:rgb(230, 25, 230)" id = "message-container"><b>messages:</b></div>
+         <div class="arr" name="online users" id="array"><center>online users</center> </div>
+         </div>
+   <style>
+ body { background-color:rgb(165, 231, 231) }
+ input[type=text] {
+        width: 15%;
+        padding: 15px;
+         margin: 5px 0 22px 0;
+         display: inline-block;
+  border: none;
+  background: #f3eded;
+}
+.con{
+   float: left;
+  width: 64%;
+  padding: 10px;
+  height: 450px;
+  outline-color:black;
+  outline-style: solid;
+  background-color: rgb(210, 211, 200);
+}
+.submit_btn{
+   width: 6rem;
+        background-color: #1b8c00;
+        color: white;
+        border: none;
+        padding: 0.5rem;
+        cursor: pointer;
+        border-radius: 0.25rem;
+        text-transform: uppercase;
+}
+.sam{
+   border: 2px solid rgb(146, 73, 73);
+   float:left;
+  width: 15%;
+  padding: 10px;
+  height: 450px;
+  background-color: rgb(159, 205, 248);
+}
+.arr{
+   border: 2px solid rgb(12, 49, 218);
+   float:left;
+  width: 15%;
+  padding: 10px;
+  height: 450px;
+  text-align:r; 
+  background-color: rgb(185, 137, 183);
+}
+   </style>
+   </body>
+</html>
